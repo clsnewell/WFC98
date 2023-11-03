@@ -1,0 +1,89 @@
+---
+title: "Guest Lecture - Jellyfish Wrangling"
+author: "Caroline Newell"
+date: "`r Sys.Date()`"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Loading libraries
+
+```{r}
+library(tidyverse)
+library(readxl)
+
+```
+# Join Demonstrations
+```{r}
+#Making up a couple dataframes
+Species<-c("American Beaver", "Tule Elk", "Red Fox")
+Presence<-c("Present", "Present", "Absent")
+Presence<-data.frame(Species, Presence)
+
+Species<-c("American Beaver", "Tule Elk", "Coyote")
+ConsumerLevel<-c("Primary", "Primary", "Secondary")
+ConsumerLevel<-data.frame(Species, ConsumerLevel)
+
+#demonstrating left join
+FullData<-left_join(Presence, ConsumerLevel, by="Species") 
+glimpse(FullData) #No ConsumerLevel for red fox, no coyote
+
+#demonstrating right join
+FullData<-right_join(Presence, ConsumerLevel, by="Species") 
+glimpse(FullData) #No Presence for Coyote, no red fox.
+
+#Notice if you switched the order of df in the right join, you'd end up with the same result as the original left join...
+
+#demonstrating inner join
+FullData<-inner_join(Presence, ConsumerLevel, by="Species") 
+glimpse(FullData) #No Coyote, no red fox.
+
+#demonstrating full join
+FullData<-full_join(Presence, ConsumerLevel, by="Species") 
+glimpse(FullData) #Everything is retained, NA's when no match.
+
+
+#Adding Location as a column
+Species<-c("American Beaver", "Tule Elk", "Red Fox")
+Location<-c("Nurse", "Denverton", "Peytonia") #These are all names of sloughs in Suisun Marsh
+Presence<-c("Present", "Present", "Absent")
+Presence<-data.frame(Species, Location, Presence)
+
+Species<-c("American Beaver", "Tule Elk", "Coyote")
+Location<-c("Nurse", "Luco", "Spring Branch") #These are all names of sloughs in Suisun Marsh
+ConsumerLevel<-c("Primary", "Primary", "Secondary")
+ConsumerLevel<-data.frame(Species, Location, ConsumerLevel)
+
+FullData<-full_join(Presence, ConsumerLevel, join_by(Species, Location))
+glimpse(FullData)
+```
+
+# SMFS Table Joining
+```{r}
+#Merging SMFS dataframes
+
+#Step 1: read in tables
+SMFS_Catch091923 <- read_excel("C:/Users/cnewe/OneDrive/Documents/Incubator/Code/FishForesightIncubator/Data/SMFS_Catch091923.xlsx")
+SMFS_Sample091923 <- read_excel("C:/Users/cnewe/OneDrive/Documents/Incubator/Code/FishForesightIncubator/Data/SMFS_Sample091923.xlsx")
+SMFS_TrawlEffort091923 <- read_excel("C:/Users/cnewe/OneDrive/Documents/Incubator/Code/FishForesightIncubator/Data/SMFS_TrawlEffort091923.xlsx")
+
+#Look at columns in each dataframe
+glimpse(SMFS_Catch091923)
+glimpse(SMFS_Sample091923)
+glimpse(SMFS_TrawlEffort091923)
+
+#Join them by SampleRowID
+library(tidyverse)
+Step1<-left_join(SMFS_Catch091923, SMFS_Sample091923, by="SampleRowID")
+glimpse(Step1)
+
+FullTable<-left_join(Step1, SMFS_TrawlEffort091923, by="SampleRowID")
+glimpse(FullTable)
+write.csv(FullTable, "Data/SMFS_09192023.csv") #Save the new table!
+
+
+```
