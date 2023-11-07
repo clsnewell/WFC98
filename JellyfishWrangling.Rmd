@@ -36,7 +36,9 @@ glimpse(FullData) #No ConsumerLevel for red fox, no coyote
 FullData<-right_join(Presence, ConsumerLevel, by="Species") 
 glimpse(FullData) #No Presence for Coyote, no red fox.
 
-#Notice if you switched the order of df in the right join, you'd end up with the same result as the original left join...
+#Notice if you switched the order of df in the right join, you'd end up with the same result as the original left join... They are totally redundant functions. 
+FullData<-right_join(ConsumerLevel, Presence, by="Species") 
+glimpse(FullData)#same as left join above!
 
 #demonstrating inner join
 FullData<-inner_join(Presence, ConsumerLevel, by="Species") 
@@ -45,6 +47,18 @@ glimpse(FullData) #No Coyote, no red fox.
 #demonstrating full join
 FullData<-full_join(Presence, ConsumerLevel, by="Species") 
 glimpse(FullData) #Everything is retained, NA's when no match.
+
+#demonstrating join with different names
+#need to change column name for one of the tables
+Name<-c("American Beaver", "Tule Elk", "Coyote")
+ConsumerLevel<-c("Primary", "Primary", "Secondary")
+ConsumerLevel<-data.frame(Name, ConsumerLevel)
+FullData<-full_join(Presence, ConsumerLevel, join_by(Species==Name)) 
+glimpse(FullData) #kept first name
+FullData<-full_join(Presence, ConsumerLevel, join_by(Name==Species)) #didn't work. Needs to match order of dataframes listed.
+FullData<-full_join(ConsumerLevel, Presence, join_by(Name==Species)) 
+glimpse(FullData) #kept first name
+
 
 
 #Adding Location as a column
@@ -59,7 +73,11 @@ ConsumerLevel<-c("Primary", "Primary", "Secondary")
 ConsumerLevel<-data.frame(Species, Location, ConsumerLevel)
 
 FullData<-full_join(Presence, ConsumerLevel, join_by(Species, Location))
-glimpse(FullData)
+glimpse(FullData) #notice that the tule elk with different locations each get own row.
+
+Presence<-mutate(Presence, Sp_Loc = paste(Species, Location, sep="_"))
+ConsumerLevel<-mutate(ConsumerLevel, Sp_Loc = paste(Species, Location, sep="_"))
+FullData<-full_join(Presence, ConsumerLevel, by="Sp_Loc")
 ```
 
 # SMFS Table Joining
@@ -67,23 +85,41 @@ glimpse(FullData)
 #Merging SMFS dataframes
 
 #Step 1: read in tables
-SMFS_Catch091923 <- read_excel("C:/Users/cnewe/OneDrive/Documents/Incubator/Code/FishForesightIncubator/Data/SMFS_Catch091923.xlsx")
+SMFS_Catch091923 <- read_excel("C:/Users/cnewe/OneDrive/Documents/Incubator/Code/FishForesightIncubator/Data/SMFS_Catch091923.xlsx") #this loads the data from my directory on my computer. You'll have to download the data and then update this code with your own path file.
 SMFS_Sample091923 <- read_excel("C:/Users/cnewe/OneDrive/Documents/Incubator/Code/FishForesightIncubator/Data/SMFS_Sample091923.xlsx")
 SMFS_TrawlEffort091923 <- read_excel("C:/Users/cnewe/OneDrive/Documents/Incubator/Code/FishForesightIncubator/Data/SMFS_TrawlEffort091923.xlsx")
 
 #Look at columns in each dataframe
-glimpse(SMFS_Catch091923)
-glimpse(SMFS_Sample091923)
-glimpse(SMFS_TrawlEffort091923)
+glimpse(SMFS_Catch091923) #Each row refers to a species caught in a sampling event, leading to multiple rows for a sampling event.
+glimpse(SMFS_Sample091923) #Each row refers to a sampling event 
+glimpse(SMFS_TrawlEffort091923) #Each row refers to a trawl sampling event. There are non-trawl sampling events leading to more sample rows than trawl rows. 
 
 #Join them by SampleRowID
-library(tidyverse)
-Step1<-left_join(SMFS_Catch091923, SMFS_Sample091923, by="SampleRowID")
+Step1<-left_join(SMFS_TrawlEffort091923, SMFS_Sample091923, by="SampleRowID")
 glimpse(Step1)
 
-FullTable<-left_join(Step1, SMFS_TrawlEffort091923, by="SampleRowID")
+LeftTable<-left_join(Step1, SMFS_Catch091923, by="SampleRowID")
+RightTable<-right_join(Step1, SMFS_Catch091923, by="SampleRowID")
+FullTable<-full_join(Step1, SMFS_Catch091923, by="SampleRowID")
+InnerTable<-inner_join(Step1, SMFS_Catch091923, by="SampleRowID")
+glimpse(LeftTable)
+glimpse(RightTable)
 glimpse(FullTable)
-write.csv(FullTable, "Data/SMFS_09192023.csv") #Save the new table!
+glimpse(InnerTable)
+unique(Step1$MethodCode)
+unique(SMFS_Catch091923$OrganismCode)
 
+LeftTable<-filter(LeftTable, MethodCode == "OTR")
+glimpse(LeftTable)
 
+RightTable<-filter(RightTable, MethodCode == "OTR")
+glimpse(RightTable)
+
+FullTable<-filter(FullTable, MethodCode == "OTR")
+glimpse(FullTable)
+
+InnerTable<-filter(InnerTable, MethodCode == "OTR")
+glimpse(InnerTable)
+
+write.csv(FullTable, "C:/Users/cnewe/OneDrive/Documents/WFC 98/Guest Lecture/WFC98/SMFS_09192023.csv") #Save the new table! You can change the name between what your dataframe is in the rmd and what it is saved as. Here, I give it the name 'SMFS_09192023'
 ```
