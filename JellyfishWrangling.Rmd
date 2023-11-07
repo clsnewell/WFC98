@@ -55,7 +55,7 @@ ConsumerLevel<-c("Primary", "Primary", "Secondary")
 ConsumerLevel<-data.frame(Name, ConsumerLevel)
 FullData<-full_join(Presence, ConsumerLevel, join_by(Species==Name)) 
 glimpse(FullData) #kept first name
-FullData<-full_join(Presence, ConsumerLevel, join_by(Name==Species)) #didn't work. Needs to match order of dataframes listed.
+#FullData<-full_join(Presence, ConsumerLevel, join_by(Name==Species)) #didn't work. Needs to match order of dataframes listed.
 FullData<-full_join(ConsumerLevel, Presence, join_by(Name==Species)) 
 glimpse(FullData) #kept first name
 
