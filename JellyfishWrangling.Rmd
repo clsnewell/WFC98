@@ -77,7 +77,7 @@ glimpse(FullData) #notice that the tule elk with different locations each get ow
 
 Presence<-mutate(Presence, Sp_Loc = paste(Species, Location, sep="_"))
 ConsumerLevel<-mutate(ConsumerLevel, Sp_Loc = paste(Species, Location, sep="_"))
-FullData<-full_join(Presence, ConsumerLevel, by="Sp_Loc")
+FullData<-full_join(Presence, ConsumerLevel, by="Sp_Loc") #not ideal, lots of repeated columns. Better to use the join_by argument above. 
 ```
 
 # SMFS Table Joining
